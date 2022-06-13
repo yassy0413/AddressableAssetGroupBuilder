@@ -26,8 +26,10 @@ namespace AddressableAssets.GroupBuilder
         [Serializable]
         public sealed class Group
         {
+            [Tooltip("Group Name")]
             public string name;
             public string label;
+            [Tooltip("Specify any group setting such as PackTogether, PackTogetherByLabel, PackSeparately, etc.")]
             public AddressableAssetGroupTemplate template;
             [Tooltip("Required scripting define symbol like UNITY_EDITOR")]
             public string symbol;
