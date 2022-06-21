@@ -31,6 +31,10 @@ Press the "Build" button to create the group.
 
 ![](StoreDocument/CreatedGroup01.png)
 
+Press the "Clear" button to clear asset entries and labels.
+
+Press the "Test" button to output asset entries with labels and own group.
+
 You can enter a regular expression and use the result as a variable for the label.
 
 ![](StoreDocument/Inspector02.png)
