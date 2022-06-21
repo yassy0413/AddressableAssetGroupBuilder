@@ -14,13 +14,17 @@ namespace AddressableAssets.GroupBuilder
         public string defaultGroupName = "DefaultGroup";
         public AddressableAssetGroupTemplate defaultGroupTemplate;
         public AddressableAssetGroupBuilder[] builders = Array.Empty<AddressableAssetGroupBuilder>();
+        [Tooltip("If true, remove unused groups when build.")]
+        public bool removeUnusedGroupsWhenBuild = true;
 
         public void TestAll()
         {
+            var count = 0;
             foreach (var builder in builders)
             {
-                builder.Test();
+                count += builder.Test();
             }
+            Debug.Log($"{count} asset entries had found at {this.name}");
         }
 
         public void BuildAll()
@@ -58,13 +62,16 @@ namespace AddressableAssets.GroupBuilder
                 }
 
                 // remove unused groups
-                foreach (var group in addressableAssetSettings.groups.ToArray())
+                if (removeUnusedGroupsWhenBuild)
                 {
-                    if (group.Default || work.groupMap.ContainsKey(group.Name))
+                    foreach (var group in addressableAssetSettings.groups.ToArray())
                     {
-                        continue;
+                        if (group.Default || work.groupMap.ContainsKey(group.Name))
+                        {
+                            continue;
+                        }
+                        addressableAssetSettings.RemoveGroup(group);
                     }
-                    addressableAssetSettings.RemoveGroup(group);
                 }
 
                 AddressableAssetGroupBuilder.Finalize(work);

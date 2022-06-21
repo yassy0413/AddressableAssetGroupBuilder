@@ -52,15 +52,19 @@ namespace AddressableAssets.GroupBuilder
             public HashSet<string> guids = new();
         }
 
-        public void Test()
+        public int Test()
         {
+            var count = 0;
             foreach (var groupPolicy in groups.Where(VerifySymbol))
             {
                 foreach (var asset in FindAssetsQuery(groupPolicy).OrderBy(x => x.path))
                 {
-                    Debug.Log($"asset: {asset.path}\nlabel: {asset.label}");
+                    Debug.Log($"asset: {asset.path}\nlabel: {asset.label}\ngroup: {groupPolicy.name}");
+                    ++count;
                 }
             }
+            Debug.Log($"{count} asset entries had found at {this.name}");
+            return count;
         }
 
         public void Build()

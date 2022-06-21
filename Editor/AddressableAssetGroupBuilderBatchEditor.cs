@@ -12,7 +12,7 @@ namespace AddressableAssets.GroupBuilder
 
             EditorGUILayout.BeginHorizontal();
 
-            if (GUILayout.Button("Test"))
+            if (GUILayout.Button(new GUIContent("Test", "Output target asset entries with labels to console.")))
             {
                 var self = target as AddressableAssetGroupBuilderBatch;
                 self.TestAll();
@@ -22,7 +22,7 @@ namespace AddressableAssets.GroupBuilder
                 var self = target as AddressableAssetGroupBuilderBatch;
                 self.BuildAll();
             }
-            if (GUILayout.Button("Clear"))
+            if (GUILayout.Button(new GUIContent("Clear", "Clear asset entries and labels.")))
             {
                 AddressableAssetGroupBuilder.ClearAddressing();
             }
