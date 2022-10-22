@@ -47,9 +47,9 @@ namespace AddressableAssets.GroupBuilder
 
         public sealed class Work
         {
-            public Dictionary<string, AddressableAssetGroup> groupMap = new();
-            public HashSet<string> labels = new();
-            public HashSet<string> guids = new();
+            public Dictionary<string, AddressableAssetGroup> groupMap = new Dictionary<string, AddressableAssetGroup>();
+            public HashSet<string> labels = new HashSet<string>();
+            public HashSet<string> guids = new HashSet<string>();
         }
 
         public int Test()
