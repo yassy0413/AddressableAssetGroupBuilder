@@ -7,8 +7,6 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Settings;
-using WebSocketSharp;
-using static AddressableAssets.GroupBuilder.AddressableAssetGroupBuilder;
 
 namespace AddressableAssets.GroupBuilder
 {
