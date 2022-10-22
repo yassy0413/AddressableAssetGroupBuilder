@@ -1,0 +1,11 @@
+{
+    "name": "yassy",
+    "displayName": "Addressable Asset Group Builder",
+    "version": "1.0.0",
+    "unity": "2020.1",
+    "description": "Easily create Group settings for Unity.Addressables",
+    "license": "MIT",
+    "dependencies": {
+        "com.unity.addressables": "1.8.19"
+    }
+}
