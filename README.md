@@ -41,6 +41,7 @@ You can enter a regular expression and use the result as a variable for the labe
 ![](StoreDocument/CreatedGroup02.png)
 
 
+
 UPM
 --- 
-"https://github.com/yassy0413/AddressableAssetGroupBuilder.git?path=/Packages"
+"https://github.com/yassy0413/AddressableAssetGroupBuilder.git"
