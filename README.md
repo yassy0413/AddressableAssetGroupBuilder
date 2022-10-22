@@ -44,4 +44,5 @@ You can enter a regular expression and use the result as a variable for the labe
 
 UPM
 --- 
-"https://github.com/yassy0413/AddressableAssetGroupBuilder.git"
+**https://github.com/yassy0413/AddressableAssetGroupBuilder.git**
+
