@@ -78,7 +78,7 @@ namespace AddressableAssets.GroupBuilder
                 foreach (var asset in FindAssetsQuery(groupPolicy).OrderBy(x => x.path))
                 {
                     var labels = asset.label.Split(',').Concat(groupPolicy.ValidAdditionalLabels(asset.path)).Distinct();
-                    Debug.Log($"asset: {asset.path}\nlabel: {string.Join(',', labels)}\ngroup: {groupPolicy.name}");
+                    Debug.Log($"asset: {asset.path}\nlabel: {string.Join(",", labels)}\ngroup: {groupPolicy.name}");
                     ++count;
                 }
             }
