@@ -7,6 +7,8 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Settings;
+using WebSocketSharp;
+using static AddressableAssets.GroupBuilder.AddressableAssetGroupBuilder;
 
 namespace AddressableAssets.GroupBuilder
 {
@@ -24,25 +26,43 @@ namespace AddressableAssets.GroupBuilder
         public Group[] groups = Array.Empty<Group>();
 
         [Serializable]
+        public sealed class AdditionalLabel
+        {
+            [Tooltip("Multiple labels can be defined by separating them with ','")]
+            public string label;
+            [Tooltip("Regular expression path matching. The resulting variables can be used in label.")]
+            public string pattern;
+        }
+
+        [Serializable]
         public sealed class Group
         {
             [Tooltip("Group Name")]
             public string name;
+            [Tooltip("Multiple labels can be defined by separating them with ','")]
             public string label;
             [Tooltip("Specify any group setting such as PackTogether, PackTogetherByLabel, PackSeparately, etc.")]
             public AddressableAssetGroupTemplate template;
-            [Tooltip("Required scripting define symbol like UNITY_EDITOR")]
+            [Tooltip("Required scripting define symbol, like UNITY_EDITOR for only editor environment.")]
             public string symbol;
-
-            public DefaultAsset[] searchInFolders = Array.Empty<DefaultAsset>();
             [Tooltip("Filter for FindAssets")]
             public string filter;
             [Tooltip("Add regular expression path matching. The resulting variables can be used in label.")]
             public string pattern;
+            [Tooltip("Target folders")]
+            public DefaultAsset[] searchInFolders = Array.Empty<DefaultAsset>();
+            [Tooltip("Additional labels for pattern matching targets.")]
+            public AdditionalLabel[] AdditionalLabels;
 
             public string Label(string path) =>
                 (string.IsNullOrEmpty(label) || string.IsNullOrEmpty(pattern)) ?
                     label : Regex.Replace(path, pattern, label);
+
+            public string[] ValidAdditionalLabels(string path) =>
+                AdditionalLabels
+                .Where(x => !string.IsNullOrEmpty(x.label) && Regex.IsMatch(path, x.pattern))
+                .Select(x => Regex.Replace(path, x.pattern, x.label))
+                .ToArray();
         }
 
         public sealed class Work
@@ -59,7 +79,8 @@ namespace AddressableAssets.GroupBuilder
             {
                 foreach (var asset in FindAssetsQuery(groupPolicy).OrderBy(x => x.path))
                 {
-                    Debug.Log($"asset: {asset.path}\nlabel: {asset.label}\ngroup: {groupPolicy.name}");
+                    var labels = asset.label.Split(',').Concat(groupPolicy.ValidAdditionalLabels(asset.path)).Distinct();
+                    Debug.Log($"asset: {asset.path}\nlabel: {string.Join(',', labels)}\ngroup: {groupPolicy.name}");
                     ++count;
                 }
             }
@@ -125,11 +146,24 @@ namespace AddressableAssets.GroupBuilder
                     }
                     work.guids.Add(guid);
 
+                    void AddLabels(string labels)
+                    {
+                        foreach (var label in labels.Split(','))
+                        {
+                            addressableAssetSettings.AddLabel(label, false);
+                            entry.labels.Add(label);
+                            work.labels.Add(label);
+                        }
+                    }
+
                     if (!string.IsNullOrEmpty(label))
                     {
-                        addressableAssetSettings.AddLabel(label, false);
-                        entry.labels.Add(label);
-                        work.labels.Add(label);
+                        AddLabels(label);
+                    }
+
+                    foreach (var additionalLabel in groupPolicy.ValidAdditionalLabels(path))
+                    {
+                        AddLabels(additionalLabel);
                     }
                 }
             }
