@@ -50,7 +50,7 @@ namespace AddressableAssets.GroupBuilder
             [Tooltip("Target folders")]
             public DefaultAsset[] searchInFolders = Array.Empty<DefaultAsset>();
             [Tooltip("Additional labels for pattern matching targets.")]
-            public AdditionalLabel[] AdditionalLabels;
+            public AdditionalLabel[] AdditionalLabels = Array.Empty<AdditionalLabel>();
 
             public string Label(string path) =>
                 (string.IsNullOrEmpty(label) || string.IsNullOrEmpty(pattern)) ?
