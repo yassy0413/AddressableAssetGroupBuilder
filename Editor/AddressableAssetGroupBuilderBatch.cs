@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.AddressableAssets;
@@ -16,15 +18,13 @@ namespace AddressableAssets.GroupBuilder
         public AddressableAssetGroupBuilder[] builders = Array.Empty<AddressableAssetGroupBuilder>();
         [Tooltip("If true, remove unused groups when build.")]
         public bool removeUnusedGroupsWhenBuild = true;
+        [HideInInspector]
+        public string[] keepGroupsRegexPattern = Array.Empty<string>();
 
         public void TestAll()
         {
-            var count = 0;
-            foreach (var builder in builders)
-            {
-                count += builder.Test();
-            }
-            Debug.Log($"{count} asset entries had found at {this.name}");
+            var count = builders.Sum(x => x.Test());
+            Debug.Log($"{count} asset entries had found at {name}");
         }
 
         public void BuildAll()
@@ -37,7 +37,7 @@ namespace AddressableAssets.GroupBuilder
 
                 AddressableAssetGroupBuilder.RemoveMissingGroupReferences();
 
-                // apply defautl group
+                // apply default group
                 if (!string.IsNullOrEmpty(defaultGroupName))
                 {
                     if (defaultGroupTemplate == null)
@@ -70,6 +70,12 @@ namespace AddressableAssets.GroupBuilder
                         {
                             continue;
                         }
+
+                        if (keepGroupsRegexPattern.Any(x => Regex.IsMatch(group.Name, x)))
+                        {
+                            continue;
+                        }
+                        
                         addressableAssetSettings.RemoveGroup(group);
                     }
                 }

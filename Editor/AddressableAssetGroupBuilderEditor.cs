@@ -15,19 +15,36 @@ namespace AddressableAssets.GroupBuilder
             if (GUILayout.Button(new GUIContent("Test", "Output target asset entries with labels to console.")))
             {
                 var self = target as AddressableAssetGroupBuilder;
-                self.Test();
+
+                if (VerifyGroup(self))
+                {
+                    self.Test();
+                }
             }
+
             if (GUILayout.Button("Build"))
             {
                 var self = target as AddressableAssetGroupBuilder;
-                self.Build();
+
+                if (VerifyGroup(self))
+                {
+                    self.Build();
+                }
             }
+
             if (GUILayout.Button(new GUIContent("Clear", "Clear asset entries and labels.")))
             {
                 AddressableAssetGroupBuilder.ClearAddressing();
             }
 
             EditorGUILayout.EndHorizontal();
+        }
+
+        private static bool VerifyGroup(AddressableAssetGroupBuilder builder)
+        {
+            var groupVerifier = new AddressableAssetGroupBuilder.GroupVerifier();
+            groupVerifier.Join(builder);
+            return groupVerifier.Verify();
         }
     }
 }

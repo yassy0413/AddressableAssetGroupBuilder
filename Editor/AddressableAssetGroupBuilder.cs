@@ -15,6 +15,7 @@ namespace AddressableAssets.GroupBuilder
         menuName = "Addressables/Group Builder")]
     public sealed class AddressableAssetGroupBuilder : ScriptableObject
     {
+        public string summary;
         [Tooltip("Path matching is case-insensitive")]
         public bool caseInsensitivePathPatterns = false;
         [Tooltip("Exclude paths matching any of the regular expressions")]
@@ -22,6 +23,17 @@ namespace AddressableAssets.GroupBuilder
         [Tooltip("Contains paths matching any of the regular expressions (if not empty)")]
         public string[] includePathPatterns = Array.Empty<string>();
         public Group[] groups = Array.Empty<Group>();
+
+        public enum AddressNamingMode
+        {
+            FullPath,
+            FileName,
+            FileNameWithoutExtension,
+            FolderGuidAndFileName,
+            FolderGuidAndFileNameWithoutExtension,
+            Dynamic,
+            Blank,
+        }
 
         [Serializable]
         public sealed class AdditionalLabel
@@ -35,14 +47,16 @@ namespace AddressableAssets.GroupBuilder
         [Serializable]
         public sealed class Group
         {
-            [Tooltip("Group Name")]
-            public string name;
-            [Tooltip("Multiple labels can be defined by separating them with ','")]
-            public string label;
+            public string groupName;
+            public string summary;
+            [Tooltip("Address Naming Mode")]
+            public AddressNamingMode namingMode;
             [Tooltip("Specify any group setting such as PackTogether, PackTogetherByLabel, PackSeparately, etc.")]
             public AddressableAssetGroupTemplate template;
             [Tooltip("Required scripting define symbol, like UNITY_EDITOR for only editor environment.")]
             public string symbol;
+            [Tooltip("Multiple labels can be defined by separating them with ','")]
+            public string label;
             [Tooltip("Filter for FindAssets")]
             public string filter;
             [Tooltip("Add regular expression path matching. The resulting variables can be used in label.")]
@@ -50,24 +64,103 @@ namespace AddressableAssets.GroupBuilder
             [Tooltip("Target folders")]
             public DefaultAsset[] searchInFolders = Array.Empty<DefaultAsset>();
             [Tooltip("Additional labels for pattern matching targets.")]
-            public AdditionalLabel[] AdditionalLabels = Array.Empty<AdditionalLabel>();
+            public AdditionalLabel[] additionalLabels = Array.Empty<AdditionalLabel>();
+
+            public Dictionary<string, int> DynamicPathNumberMap { get; } = new ();
 
             public string Label(string path) =>
                 (string.IsNullOrEmpty(label) || string.IsNullOrEmpty(pattern)) ?
                     label : Regex.Replace(path, pattern, label);
 
+            public string Address(string path) =>
+                namingMode switch
+                {
+                    AddressNamingMode.FullPath => path,
+                    AddressNamingMode.FileName => Path.GetFileName(path),
+                    AddressNamingMode.FileNameWithoutExtension => Path.GetFileNameWithoutExtension(path),
+                    AddressNamingMode.FolderGuidAndFileName => $"{GetParentFolderGuid(path)}/{Path.GetFileName(path)}",
+                    AddressNamingMode.FolderGuidAndFileNameWithoutExtension => $"{GetParentFolderGuid(path)}/{Path.GetFileNameWithoutExtension(path)}",
+                    AddressNamingMode.Dynamic => GetDynamicPathNumber(path),
+                    AddressNamingMode.Blank => "_",
+                    _ => throw new NotImplementedException(),
+                };
+
             public string[] ValidAdditionalLabels(string path) =>
-                AdditionalLabels
+                additionalLabels
                 .Where(x => !string.IsNullOrEmpty(x.label) && Regex.IsMatch(path, x.pattern))
                 .Select(x => Regex.Replace(path, x.pattern, x.label))
                 .ToArray();
+
+            private string GetParentFolderGuid(string path) =>
+                AssetDatabase.AssetPathToGUID(Path.GetDirectoryName(path));
+
+            private string GetDynamicPathNumber(string path)
+            {
+                if (!DynamicPathNumberMap.TryGetValue(path, out var number))
+                {
+                    number = DynamicPathNumberMap.Count;
+                    DynamicPathNumberMap.Add(path, number);
+                }
+                return number.ToString();
+            }
         }
 
         public sealed class Work
         {
-            public Dictionary<string, AddressableAssetGroup> groupMap = new Dictionary<string, AddressableAssetGroup>();
-            public HashSet<string> labels = new HashSet<string>();
-            public HashSet<string> guids = new HashSet<string>();
+            public readonly Dictionary<string, AddressableAssetGroup> groupMap = new();
+            public readonly HashSet<string> labels = new();
+            public readonly HashSet<string> guids = new();
+        }
+
+        public sealed class GroupVerifier
+        {
+            private Dictionary<string, List<(Group Group, AddressableAssetGroupBuilder Builder)>> groupNameMap = new();
+
+            public void Join(AddressableAssetGroupBuilder builder)
+            {
+                foreach (var groupPolicy in builder.groups)
+                {
+                    if (!groupNameMap.TryGetValue(groupPolicy.groupName, out var list))
+                    {
+                        list = new List<(Group Group, AddressableAssetGroupBuilder Builder)>();
+                        groupNameMap.Add(groupPolicy.groupName, list);
+                    }
+
+                    list.Add((groupPolicy, builder));
+                }
+            }
+
+            public bool Verify()
+            {
+                return groupNameMap.All(x =>
+                {
+                    var missingList = x.Value
+                        .Where(y => y.Group.template == null)
+                        .ToArray();
+
+                    if (missingList.Length > 0)
+                    {
+                        foreach (var missing in missingList)
+                        {
+                            Debug.LogError($"Missing group template [{missing.Group.groupName}] in [{missing.Builder.name}]", missing.Builder);
+                        }
+                        return false;
+                    }
+
+                    var first = x.Value.First().Group.template;
+
+                    if (x.Value.Any(y => y.Group.template != first))
+                    {
+                        foreach ((Group Group, AddressableAssetGroupBuilder Builder) in x.Value)
+                        {
+                            Debug.LogError($"Ambiguous groups templates [{Group.template.name}] at [{Group.groupName}] in [{Builder.name}]", Builder);
+                        }
+                        return false;
+                    }
+
+                    return true;
+                });
+            }
         }
 
         public int Test()
@@ -78,7 +171,8 @@ namespace AddressableAssets.GroupBuilder
                 foreach (var asset in FindAssetsQuery(groupPolicy).OrderBy(x => x.path))
                 {
                     var labels = asset.label.Split(',').Concat(groupPolicy.ValidAdditionalLabels(asset.path)).Distinct();
-                    Debug.Log($"asset: {asset.path}\nlabel: {string.Join(",", labels)}\ngroup: {groupPolicy.name}");
+                    var address = groupPolicy.Address(asset.path);
+                    Debug.Log($"asset: {asset.path}\nlabel: {string.Join(",", labels)}\ngroup: {groupPolicy.groupName}\naddress: {address}");
                     ++count;
                 }
             }
@@ -114,19 +208,21 @@ namespace AddressableAssets.GroupBuilder
 
             foreach (var groupPolicy in groups.Where(VerifySymbol))
             {
-                var title = $"[{name}][{groupPolicy.name}]";
+                var title = $"[{name}][{groupPolicy.groupName}]";
+
+                groupPolicy.DynamicPathNumberMap.Clear();
 
                 // create group
-                if (!work.groupMap.TryGetValue(groupPolicy.name, out var group))
+                if (!work.groupMap.TryGetValue(groupPolicy.groupName, out var group))
                 {
-                    group = addressableAssetSettings.FindGroup(groupPolicy.name);
+                    group = addressableAssetSettings.FindGroup(groupPolicy.groupName);
                     if (group == null)
                     {
                         group = addressableAssetSettings.CreateGroup(
-                            groupPolicy.name, false, true, false, null, groupPolicy.template.GetTypes());
+                            groupPolicy.groupName, false, true, false, null, groupPolicy.template.GetTypes());
                     }
                     groupPolicy.template.ApplyToAddressableAssetGroup(group);
-                    work.groupMap.Add(groupPolicy.name, group);
+                    work.groupMap.Add(groupPolicy.groupName, group);
                 }
 
                 // create entry
@@ -143,6 +239,8 @@ namespace AddressableAssets.GroupBuilder
                         entry = addressableAssetSettings.CreateOrMoveEntry(guid, group, true, false);
                     }
                     work.guids.Add(guid);
+
+                    entry.SetAddress(groupPolicy.Address(path), false);
 
                     void AddLabels(string labels)
                     {
@@ -233,7 +331,6 @@ namespace AddressableAssets.GroupBuilder
                 EditorUtility.ClearProgressBar();
                 Debug.Log($"Clear addressing finished.");
             }
-
         }
 
         private static bool VerifySymbol(Group group)

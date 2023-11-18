@@ -6,28 +6,61 @@ namespace AddressableAssets.GroupBuilder
     [CustomEditor(typeof(AddressableAssetGroupBuilderBatch))]
     public sealed class AddressableAssetGroupBuilderBatchEditor : Editor
     {
+        private SerializedProperty keepGroupsRegexPatternProp;
+
+        private void OnEnable()
+        {
+            keepGroupsRegexPatternProp = serializedObject.FindProperty("keepGroupsRegexPattern");
+        }
+
         public override void OnInspectorGUI()
         {
+            if (target is not AddressableAssetGroupBuilderBatch self)
+            {
+                return;
+            }
+            
             base.OnInspectorGUI();
 
-            EditorGUILayout.BeginHorizontal();
-
-            if (GUILayout.Button(new GUIContent("Test", "Output target asset entries with labels to console.")))
+            if (self.removeUnusedGroupsWhenBuild)
             {
-                var self = target as AddressableAssetGroupBuilderBatch;
+                serializedObject.Update();
+                EditorGUILayout.PropertyField(keepGroupsRegexPatternProp, true);
+                serializedObject.ApplyModifiedProperties();
+            }
+            
+            EditorGUILayout.BeginHorizontal();
+            var test = GUILayout.Button(new GUIContent("Test", "Output target asset entries with labels to console."));
+            var build = GUILayout.Button("Build");
+            var clear = GUILayout.Button(new GUIContent("Clear", "Clear asset entries and labels."));
+            EditorGUILayout.EndHorizontal();
+
+            if (test && VerifyGroup(self))
+            {
                 self.TestAll();
             }
-            if (GUILayout.Button("Build"))
+
+            if (build && VerifyGroup(self))
             {
-                var self = target as AddressableAssetGroupBuilderBatch;
                 self.BuildAll();
             }
-            if (GUILayout.Button(new GUIContent("Clear", "Clear asset entries and labels.")))
+
+            if (clear)
             {
                 AddressableAssetGroupBuilder.ClearAddressing();
             }
+        }
 
-            EditorGUILayout.EndHorizontal();
+        private static bool VerifyGroup(AddressableAssetGroupBuilderBatch builderBatch)
+        {
+            var groupVerifier = new AddressableAssetGroupBuilder.GroupVerifier();
+
+            foreach (var builder in builderBatch.builders)
+            {
+                groupVerifier.Join(builder);
+            }
+
+            return groupVerifier.Verify();
         }
     }
 }
