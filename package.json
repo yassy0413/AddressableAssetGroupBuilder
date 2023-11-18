@@ -4,7 +4,11 @@
     "version": "1.0.2",
     "unity": "2020.1",
     "description": "Easily create Group settings for Unity.Addressables",
-    "license": "MIT",
+    "license": "GPL-3.0",
+    "author": {
+        "name": "Yasutaka Ishii",
+        "url" : "https://github.com/yassy0413"
+    },
     "dependencies": {
         "com.unity.addressables": "1.8.19"
     }

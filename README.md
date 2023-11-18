@@ -21,15 +21,15 @@ to create the AddressableAssetGroupBuilder Asset.
 
 Prepare the asset.
 
-![](StoreDocument/ProjectView01.png)
+![](Editor/StoreDocument/ProjectView01.png)
 
 Set the parameters.
 
-![](StoreDocument/Inspector01.png)
+![](Editor/StoreDocument/Inspector01.png)
 
 Press the "Build" button to create the group.
 
-![](StoreDocument/CreatedGroup01.png)
+![](Editor/StoreDocument/CreatedGroup01.png)
 
 Press the "Clear" button to clear asset entries and labels.
 
@@ -37,8 +37,8 @@ Press the "Test" button to output asset entries with labels and own group.
 
 You can enter a regular expression and use the result as a variable for the label.
 
-![](StoreDocument/Inspector02.png)
-![](StoreDocument/CreatedGroup02.png)
+![](Editor/StoreDocument/Inspector02.png)
+![](Editor/StoreDocument/CreatedGroup02.png)
 
 
 
