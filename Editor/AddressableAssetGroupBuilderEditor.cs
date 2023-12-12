@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEditor;
 
-namespace AddressableAssets.GroupBuilder
+namespace AddressableAssetGroupBuilder
 {
     [CustomEditor(typeof(AddressableAssetGroupBuilder))]
     public sealed class AddressableAssetGroupBuilderEditor : Editor

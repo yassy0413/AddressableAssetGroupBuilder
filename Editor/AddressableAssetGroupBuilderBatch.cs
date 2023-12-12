@@ -6,7 +6,7 @@ using UnityEditor;
 using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Settings;
 
-namespace AddressableAssets.GroupBuilder
+namespace AddressableAssetGroupBuilder
 {
     [CreateAssetMenu(
         fileName = "AddressableAssetGroupBuilderBatch_",

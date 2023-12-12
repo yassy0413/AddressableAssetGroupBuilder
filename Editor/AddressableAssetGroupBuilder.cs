@@ -8,7 +8,7 @@ using UnityEditor;
 using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Settings;
 
-namespace AddressableAssets.GroupBuilder
+namespace AddressableAssetGroupBuilder
 {
     [CreateAssetMenu(
         fileName = "AddressableAssetGroupBuilder_",
@@ -48,13 +48,13 @@ namespace AddressableAssets.GroupBuilder
         public sealed class Group
         {
             public string groupName;
-            public string summary;
-            [Tooltip("Address Naming Mode")]
-            public AddressNamingMode namingMode;
             [Tooltip("Specify any group setting such as PackTogether, PackTogetherByLabel, PackSeparately, etc.")]
             public AddressableAssetGroupTemplate template;
+            public string summary;
             [Tooltip("Required scripting define symbol, like UNITY_EDITOR for only editor environment.")]
             public string symbol;
+            [Tooltip("Address Naming Mode")]
+            public AddressNamingMode namingMode;
             [Tooltip("Multiple labels can be defined by separating them with ','")]
             public string label;
             [Tooltip("Filter for FindAssets")]
