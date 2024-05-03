@@ -6,11 +6,11 @@ namespace AddressableAssetGroupBuilder
     [CustomEditor(typeof(AddressableAssetGroupBuilderBatch))]
     public sealed class AddressableAssetGroupBuilderBatchEditor : Editor
     {
-        private SerializedProperty keepGroupsRegexPatternProp;
+        private SerializedProperty keepGroupNamesRegexPatternProp;
 
         private void OnEnable()
         {
-            keepGroupsRegexPatternProp = serializedObject.FindProperty("keepGroupsRegexPattern");
+            keepGroupNamesRegexPatternProp = serializedObject.FindProperty("keepGroupNamesRegexPattern");
         }
 
         public override void OnInspectorGUI()
@@ -25,7 +25,7 @@ namespace AddressableAssetGroupBuilder
             if (self.removeUnusedGroupsWhenBuild)
             {
                 serializedObject.Update();
-                EditorGUILayout.PropertyField(keepGroupsRegexPatternProp, true);
+                EditorGUILayout.PropertyField(keepGroupNamesRegexPatternProp, true);
                 serializedObject.ApplyModifiedProperties();
             }
             
@@ -47,7 +47,7 @@ namespace AddressableAssetGroupBuilder
 
             if (clear)
             {
-                AddressableAssetGroupBuilder.ClearAddressing();
+                AddressableAssetGroupBuilder.ClearAddressing(self.keepGroupNamesRegexPattern);
             }
         }
 

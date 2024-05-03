@@ -265,17 +265,39 @@ namespace AddressableAssetGroupBuilder
             }
         }
 
-        public static void Finalize(Work work)
+        public static void Finalize(Work work, string[] keepGroupNamesRegexPattern = null)
         {
             var addressableAssetSettings = AddressableAssetSettingsDefaultObject.Settings;
 
             EditorUtility.DisplayProgressBar("Finalize", "", 1f);
+
+            var keepGroupNames = new HashSet<string>();
+            var keepGroupLabels = new HashSet<string>();
+            if (keepGroupNamesRegexPattern != null)
+            {
+                foreach (var group in addressableAssetSettings.groups)
+                {
+                    if (!keepGroupNamesRegexPattern.Any(x => Regex.IsMatch(group.Name, x)))
+                    {
+                        continue;
+                    }
+                    keepGroupNames.Add(group.Name);
+                    foreach (var label in group.entries.SelectMany(x => x.labels))
+                    {
+                        keepGroupLabels.Add(label);
+                    }
+                }
+            }
 
             // remove unused entries
             var entries = new List<AddressableAssetEntry>();
             addressableAssetSettings.GetAllAssets(entries, false);
             foreach (var entry in entries.Where(x => !work.guids.Contains(x.guid)))
             {
+                if (keepGroupNames.Contains(entry.parentGroup.Name))
+                {
+                    continue;
+                }
                 if (!work.groupMap.ContainsKey(entry.parentGroup.Name))
                 {
                     work.groupMap.Add(entry.parentGroup.Name, entry.parentGroup);
@@ -286,6 +308,10 @@ namespace AddressableAssetGroupBuilder
             // remove unused labels
             foreach (var label in addressableAssetSettings.GetLabels().Where(x => !work.labels.Contains(x)))
             {
+                if (keepGroupLabels.Contains(label))
+                {
+                    continue;
+                }
                 addressableAssetSettings.RemoveLabel(label, false);
             }
 
@@ -315,11 +341,11 @@ namespace AddressableAssetGroupBuilder
             }
         }
 
-        public static void ClearAddressing()
+        public static void ClearAddressing(string[] keepGroupNamesRegexPattern = null)
         {
             try
             {
-                Finalize(new Work());
+                Finalize(new Work(), keepGroupNamesRegexPattern);
             }
             catch (Exception e)
             {

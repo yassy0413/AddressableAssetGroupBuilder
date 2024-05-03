@@ -19,7 +19,7 @@ namespace AddressableAssetGroupBuilder
         [Tooltip("If true, remove unused groups when build.")]
         public bool removeUnusedGroupsWhenBuild = true;
         [HideInInspector]
-        public string[] keepGroupsRegexPattern = Array.Empty<string>();
+        public string[] keepGroupNamesRegexPattern = new[] { "Localization-.*" };
 
         public void TestAll()
         {
@@ -71,7 +71,7 @@ namespace AddressableAssetGroupBuilder
                             continue;
                         }
 
-                        if (keepGroupsRegexPattern.Any(x => Regex.IsMatch(group.Name, x)))
+                        if (keepGroupNamesRegexPattern.Any(x => Regex.IsMatch(group.Name, x)))
                         {
                             continue;
                         }
@@ -80,7 +80,7 @@ namespace AddressableAssetGroupBuilder
                     }
                 }
 
-                AddressableAssetGroupBuilder.Finalize(work);
+                AddressableAssetGroupBuilder.Finalize(work, keepGroupNamesRegexPattern);
             }
             catch (Exception e)
             {

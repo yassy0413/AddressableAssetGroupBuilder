@@ -32,11 +32,6 @@ namespace AddressableAssetGroupBuilder
                 }
             }
 
-            if (GUILayout.Button(new GUIContent("Clear", "Clear asset entries and labels.")))
-            {
-                AddressableAssetGroupBuilder.ClearAddressing();
-            }
-
             EditorGUILayout.EndHorizontal();
         }
 
