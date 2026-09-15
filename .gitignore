@@ -1,0 +1,3 @@
+# Keep Unity-ignored standalone tests visible even when a global ignore excludes *~.
+!/Tests~/
+!/Tests~/**

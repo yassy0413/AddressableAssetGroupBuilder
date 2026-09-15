@@ -6,13 +6,16 @@ namespace AddressableAssetGroupBuilder
     [CustomEditor(typeof(AddressableAssetGroupBuilder))]
     public sealed class AddressableAssetGroupBuilderEditor : Editor
     {
+        private static readonly GUIContent TestContent =
+            new("Test", "Output target asset entries with labels to console.");
+
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
 
             EditorGUILayout.BeginHorizontal();
 
-            if (GUILayout.Button(new GUIContent("Test", "Output target asset entries with labels to console.")))
+            if (GUILayout.Button(TestContent))
             {
                 var self = target as AddressableAssetGroupBuilder;
 
